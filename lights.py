@@ -1,15 +1,18 @@
 import requests
 import milight
 
-class Lights :
+class Lights(object) :
 
 	def __init__(self, host, port) :
 		self._host = host
 		self._port = port
 
+	def setColor(self, rgb, group) : pass
 	def setLight(self, rgb, brightness, group) : pass
 	def setLightOn(on, group) : pass
 	def setLightFade(up, group) : pass
+	def setBrightness(self, brightness, group) : pass
+
 
 class MilightImpl(Lights) : 
 
@@ -18,8 +21,11 @@ class MilightImpl(Lights) :
 		self._controller = milight.MiLight({'host': self._host, 'port': int(self._port)}, wait_duration=0) #Create a controller with 0 wait between commands
 		self._light = milight.LightBulb(['rgbw'])
 
+	def setColor(self, rgb, group) : pass
+
 	def setLight(self, rgb, brightness, group) : 
 		self._controller.send(self._light.color(milight.color_from_rgb(*rgb), group))
+		#setf._controller.send(self._light.brightness())
 
 	def setLightOn(self, on, group) :
 		if on :
@@ -36,26 +42,43 @@ class MilightImpl(Lights) :
 
 class EmulatorImpl(Lights) :
 
+	def __init__(self, host, port) :
+		super(EmulatorImpl, self).__init__(host, port)
+		'''payload = { "name":"1", "lights": ["1", "2"] }
+		requests.put("http://" + self._host + ":" + self._port + "/api/newdeveloper/groups/1", json = payload)'''
+
 	def setLight(self, rgb, brightness, group) : 
-		groupString = "" if group == 0 else str(group)
 		x, y = self.from_rgb_to_xy(*rgb)
 		payload = { "xy":[x, y], "on": True, "bri": brightness}
-		requests.put("http://" + self._host + ":" + self._port + "/api/newdeveloper/lights/"+ groupString +"/state", json = payload)
+		self._setLight(payload, group)
+
+	def setBrightness(self, brightness, group) :
+		calculatedBrightness = int(brightness * 100 / 254.0)
+		payload = { "on": True, "bri": brightness}
+		self._setLight(payload, group)
+
+	def setColor(self, rgb, group) :
+		x, y = self.from_rgb_to_xy(*rgb)
+		payload = { "xy":[x, y], "on": True }
+		self._setLight(payload, group)
 
 	def setLightOn(self, on, group) :
 		payload = { "on": on }
+		self._setLight(payload, group)
+
+	def _setLight(self, payload, group) :
 		if group == 0 :
 			requests.put("http://" + self._host + ":" + self._port + "/api/newdeveloper/lights/1/state", json = payload)
 			requests.put("http://" + self._host + ":" + self._port + "/api/newdeveloper/lights/2/state", json = payload)
 			requests.put("http://" + self._host + ":" + self._port + "/api/newdeveloper/lights/3/state", json = payload)
 			requests.put("http://" + self._host + ":" + self._port + "/api/newdeveloper/lights/4/state", json = payload)
 		else :
-			requests.put("http://" + self._host + ":" + self._port + "/api/newdeveloper/groups/"+ str(group) +"/state", json = payload)
+			requests.put("http://" + self._host + ":" + self._port + "/api/newdeveloper/lights/"+ str(group) +"/state", json = payload)
+
 
 	def setLightFade(self, on, group) : 
-		groupString = "" if group == 0 else str(group)
 		payload = { "on": on }
-		requests.put("http://" + self._host + ":" + self._port + "/api/newdeveloper/lights/"+ groupString +"/state", json = payload)
+		self._setLight(payload, group)
 
 
 
