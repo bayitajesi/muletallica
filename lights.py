@@ -19,17 +19,17 @@ class MilightImpl(Lights) :
 		self._light = milight.LightBulb(['rgbw'])
 
 	def setLight(self, rgb, brightness, group) : 
-		self._controller.send(light.color(milight.color_from_rgb(*rgb, group)
+		self._controller.send(self._light.color(milight.color_from_rgb(*rgb), group))
 
 	def setLightOn(self, on, group) :
 		if on :
-			self._controller.send(self._light.on(group)
+			self._controller.send(self._light.on(group))
 		else :
 			self._controller.send(self._light.off(group))
 
 	def setLightFade(self, up, group) : 
 		if up :
-			self._controller.send(self._light.fade_up(group)
+			self._controller.send(self._light.fade_up(group))
 		else :
 			self._controller.send(self._light.fade_down(group))
 
