@@ -1,5 +1,7 @@
 import lights
 import effects
+import threading
+from Queue import Queue
 
 class MidiListener:
     CHANNEL_BAJO = 1
@@ -16,12 +18,33 @@ class MidiListener:
         emulator.setLightOn(True,1)
         self.effectsController = effects.Effects(emulator)
 
+        self.channelQueues = {
+            self.CHANNEL_BAJO: threading.Queue(1),
+            self.CHANNEL_BATERIA: threading.Queue(1),
+            self.CHANNEL_LEAP_MOTION: threading.Queue(1)
+        }
+
+    def start(self):
+        for channel, queue in range(self.channelQueues):
+             t = MidiProcessor(queue)
+             t.daemon = True
+             t.start()
+
     def receiveMidi(self, midi):
-
-        note = midi.getNoteNumber()
-        velocity = midi.getVelocity()
-
         if midi.isNoteOn():
+            channel = midi.getChannel()
+            queue = self.channelQueues[channel]
+            queue.put_nowait(midi)
+
+class MidiProcessor(threading.Thread):
+
+    def __init__(self, queue):
+        self.queue = queue
+
+    def run(self):
+        for midi in self.queue:
+            note = midi.getNoteNumber()
+            velocity = midi.getVelocity()
             if self.isPiano(midi):
                 print "###################PIANO1:", midi
 
@@ -38,6 +61,7 @@ class MidiListener:
          #   else:
         #        print midi
 
+            self.queue.task_done()
 
     def isPiano(self, midi):
         return midi.getChannel() == MidiListener.CHANNEL_LEAP_MOTION and midi.getNoteNumber() < 40

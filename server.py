@@ -12,6 +12,7 @@ def print_message(midi):
 
 
 midiListener = midilistener.MidiListener()
+midiListener.start()
 midiin = rtmidi.RtMidiIn()
 ports = range(midiin.getPortCount())
 if ports:
