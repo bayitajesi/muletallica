@@ -1,7 +1,7 @@
 import requests
 import milight
 
-class Lights(object) :
+class LightsController(object) :
 
 	def __init__(self, host, port) :
 		self._host = host
@@ -11,21 +11,26 @@ class Lights(object) :
 	def setLight(self, rgb, brightness, group) : pass
 	def setLightOn(on, group) : pass
 	def setLightFade(up, group) : pass
-	def setBrightness(self, brightness, group) : pass
+	def setBrightness(self, brightness, group) : 
+		correctedBrightness = int(brightness * 100 / 127.0)
+		self.setBrightnessInternal(correctedBrightness, group)
+
+	def setBrightnessInternal(self, correctedBrightness, group) : pass
 
 
-class MilightImpl(Lights) : 
+
+class MilightController(LightsController) : 
 
 	def __init__(self, host, port) :
-		super(MilightImpl, self).__init__(host, port)
-		self._controller = milight.MiLight({'host': self._host, 'port': int(self._port)}, wait_duration=0) #Create a controller with 0 wait between commands
+		super(MilightController, self).__init__(host, port)
+		self._controller = milight.MiLight({'host': self._host, 'port': int(self._port)})
 		self._light = milight.LightBulb(['rgbw'])
 
-	def setColor(self, rgb, group) : pass
+	def setColor(self, rgb, group) : 
+		self._controller.send(self._light.color(milight.color_from_rgb(*rgb), group))
 
 	def setLight(self, rgb, brightness, group) : 
 		self._controller.send(self._light.color(milight.color_from_rgb(*rgb), group))
-		#setf._controller.send(self._light.brightness())
 
 	def setLightOn(self, on, group) :
 		if on :
@@ -39,27 +44,33 @@ class MilightImpl(Lights) :
 		else :
 			self._controller.send(self._light.fade_down(group))
 
+	def setBrightnessInternal(self, brightness, group) :
+		self._controller.send(self._light.brightness())
 
-class EmulatorImpl(Lights) :
+
+
+class EmulatorController(LightsController) :
 
 	def __init__(self, host, port) :
-		super(EmulatorImpl, self).__init__(host, port)
+		super(EmulatorController, self).__init__(host, port)
 		'''payload = { "name":"1", "lights": ["1", "2"] }
 		requests.put("http://" + self._host + ":" + self._port + "/api/newdeveloper/groups/1", json = payload)'''
 
 	def setLight(self, rgb, brightness, group) : 
+		correctedBrightness = int(brightness * 100 / 127.0)
+		calculatedBrightness = int(correctedBrightness * 254 / 100.0)
 		x, y = self.from_rgb_to_xy(*rgb)
-		payload = { "xy":[x, y], "on": True, "bri": brightness}
+		payload = { "xy":[x, y], "on": True, "bri": calculatedBrightness}
 		self._setLight(payload, group)
 
-	def setBrightness(self, brightness, group) :
-		calculatedBrightness = int(brightness * 100 / 254.0)
-		payload = { "on": True, "bri": brightness}
+	def setBrightnessInternal(self, brightness, group) :
+		calculatedBrightness = int(brightness * 254 / 100.0)
+		payload = { "on": True, "bri": calculatedBrightness}
 		self._setLight(payload, group)
 
 	def setColor(self, rgb, group) :
 		x, y = self.from_rgb_to_xy(*rgb)
-		payload = { "xy":[x, y], "on": True }
+		payload = { "xy":[x, y] }
 		self._setLight(payload, group)
 
 	def setLightOn(self, on, group) :
