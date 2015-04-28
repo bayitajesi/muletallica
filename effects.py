@@ -20,9 +20,8 @@ class Effects :
 
 	def colorFlicker(self, note, group) : 
 		r, g, b = self._transformNoteInColor(note)
-		self._lights.setLight([r, g, b], 127, group)
+		self._lights.setColor([r, g, b], group)
 		self._lights.setLightOn(True, group)
-		time.sleep(0.1)
 		self._lights.setLightOn(False, group)
 
     #def wiii(self, note, velocity, group) : pass

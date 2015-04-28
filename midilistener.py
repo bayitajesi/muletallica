@@ -11,22 +11,32 @@ class MidiListener:
 
     def __init__(self):
         self.actualBateriaNote = 0
-        self.lightsController = EffectsController()
+        self.lightsController = lights.LightsController()
+        emulator = lights.MilightController("192.168.43.3", "8899")
+        emulator.setLightOn(True,1)
+        self.effectsController = effects.Effects(emulator)
 
     def receiveMidi(self, midi):
+
         note = midi.getNoteNumber()
         velocity = midi.getVelocity()
 
         if midi.isNoteOn():
             if self.isPiano(midi):
-                self.lightsController.colorFlicker(note, MidiListener.GROUP_LEAP_MOTION)
+                print "###################PIANO1:", midi
+
+                self.effectsController.colorFlicker(note, MidiListener.GROUP_LEAP_MOTION)
 
             elif self.isBateria(midi):
-                self.lightsController.changeIntensity(velocity, MidiListener.GROUP_BATERIA)
+        #        print "###################BATERIA:", midi
+                self.effectsController.changeIntensity(velocity, MidiListener.GROUP_BATERIA)
                 if self.actualBateriaNote != note:
                     self.actualBateriaNote = note
                     #change gamma
-                    self.lightsController.changeGamma(note, MidiListener.GROUP_BATERIA)
+                    print "GROUP: " + str(MidiListener.GROUP_BATERIA) +" Changing gamma to: " + str(note)
+                    self.effectsController.changeColorGamma(note, MidiListener.GROUP_BATERIA)
+         #   else:
+        #        print midi
 
 
     def isPiano(self, midi):
@@ -40,19 +50,3 @@ class MidiListener:
 
     def isDjWub(self, midi):
         return midi.getChannel() == MidiListener.CHANNEL_LEAP_MOTION and midi.getNoteNumber() >=80
-
-
-class EffectsController:
-    def __init__(self):
-        emulator = lights.EmulatorImpl("172.16.22.19", "8000")
-        emulator.setLightOn(True,0)
-        self.effectsController = effects.Effects(emulator)
-
-    def changeGamma(self, note, group):
-        print "GROUP: " + str(group) +" Changing gamma to: " + str(note)
-        self.effectsController.changeColorGamma(note, group)
-    def changeIntensity(self,intensity, group):
-        print "GROUP: " + str(group) +" Changing intensity to: " + str(intensity + 50)
-        self.effectsController.changeIntensity(intensity + 50, group)
-    def colorFlicker(self, note, group):
-        print "GROUP: " + str(group) + " Sending flicker. note " + str(note)
