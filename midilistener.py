@@ -1,5 +1,6 @@
 import lights
 import effects
+import time
 import threading
 from Queue import Queue
 
@@ -61,6 +62,7 @@ class MidiProcessor(threading.Thread):
          #   else:
         #        print midi
 
+            time.sleep(0.2)
             self.queue.task_done()
 
     def isPiano(self, midi):
