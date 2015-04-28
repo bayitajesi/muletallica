@@ -12,7 +12,7 @@ class Effects :
 			self._lights.setColor([245, 10, 159], group)
 		elif note == 2 : 
 			self._lights.setColor([9, 237, 237], group)
-		else : 
+		elif note == 3: 
 			self._lights.setColor([123, 9, 237], group)
 
 	def changeIntensity(self, velocity, group) : 
@@ -21,12 +21,11 @@ class Effects :
 	def colorFlicker(self, note, group) : 
 		r, g, b = self._transformNoteInColor(note)
 		self._lights.setLight([r, g, b], 127, group)
-		self._lights.setLightFade(True, group)
+		self._lights.setLightOn(True, group)
 		time.sleep(0.1)
-		self._lights.setLightFade(False, group)
-		time.sleep(0.1)
+		self._lights.setLightOn(False, group)
 
-    # def wiii(self, note, velocity, group) : pass
+    #def wiii(self, note, velocity, group) : pass
 
 	def _transformNoteInColor(self, note) :
 		if note < 21 :
