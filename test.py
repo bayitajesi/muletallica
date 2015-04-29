@@ -2,6 +2,7 @@ import lights
 import random
 import time
 import effects
+import midilistener
 
 def main() :
 	#emulator = lights.MilightImpl("192.168.43.3", "8899")
@@ -49,6 +50,45 @@ def main() :
 	effectsController.colorFlicker(100, 0)
 	effectsController.colorFlicker(110, 0)
 	effectsController.colorFlicker(120, 0)
+
+def test_listener():
+	midiListener = midilistener.MidiListener()
+	midiListener.start()
+
+	for i in xrange(10000):
+		m = createMidi()
+		time.sleep(0.025)
+		midiListener.receiveMidi(m)
+
+def createMidi():
+	channel = random.randint(2, 3)
+	if channel == 2:
+		note_number = random.randint(1, 2)
+	else:
+		note_number = random.randint(1, 40)
+
+	velocity = random.randint(1, 127)
+	return Midi(channel, note_number, velocity)
+
+class Midi(object):
+
+	def __init__(self, channel, note_number, velocity):
+		self.channel = channel
+		self.note_number = note_number
+		self.velocity = velocity
+
+	def getNoteNumber(self):
+		return self.note_number
+
+	def getVelocity(self):
+		return self.velocity
+
+	def getChannel(self):
+		return self.channel
+
+	def isNoteOn(self):
+		return True
+
 if __name__ == "__main__" :
 	main()
 

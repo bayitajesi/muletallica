@@ -45,7 +45,7 @@ class MilightController(LightsController) :
 			self._controller.send(self._light.fade_down(group))
 
 	def setBrightnessInternal(self, brightness, group) :
-		self._controller.send(self._light.brightness(brightness))
+		self._controller.send(self._light.brightness(brightness, group))
 
 
 
