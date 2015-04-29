@@ -55,7 +55,7 @@ def test_listener():
 	midiListener = midilistener.MidiListener()
 	midiListener.start()
 
-	for i in xrange(10000):
+	for i in xrange(1000):
 		m = createMidi()
 		time.sleep(0.025)
 		midiListener.receiveMidi(m)
@@ -63,7 +63,7 @@ def test_listener():
 def createMidi():
 	channel = random.randint(2, 3)
 	if channel == 2:
-		note_number = random.randint(1, 2)
+		note_number = 1 if random.randint(1, 100) > 10 else 2
 	else:
 		note_number = random.randint(1, 40)
 
