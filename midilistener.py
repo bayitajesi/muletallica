@@ -43,7 +43,7 @@ class MidiProcessor(threading.Thread):
         emulator = lights.MilightController("192.168.43.3", "8899")
         emulator.setLightOn(True,1)
         self.effectsController = effects.Effects(emulator)
-        self.ts_last_processed = None
+        self.ts_last_processed = time.time()
 
     def run(self):
         while True:
@@ -57,12 +57,14 @@ class MidiProcessor(threading.Thread):
         timestamp, midi = self.queue.get()
         note = midi.getNoteNumber()
         velocity = midi.getVelocity()
+        discarded = False
         if self.isDrums(midi) and self.currentDrumsNote != note:
             print "#DRUMS (GAMMA):", midi
             self.currentDrumsNote = note
             self.effectsController.changeIntensity(velocity, MidiListener.GROUP_BATERIA)
             self.effectsController.changeColorGamma(note, MidiListener.GROUP_BATERIA)
         elif self.canDiscard(timestamp):
+            discarded = True
             print "discarded 0"
         elif self.isDrums(midi):
             print "#DRUMS:", midi
@@ -71,13 +73,16 @@ class MidiProcessor(threading.Thread):
             print "#PIANO1:", midi
             self.effectsController.colorFlicker(note, MidiListener.GROUP_LEAP_MOTION)
         else:
+            discarded = True
             print "discarded 2", midi
 
-        self.ts_last_processed = time.time()
+        if not discarded:
+            self.ts_last_processed = time.time()
+
         self.queue.task_done()
 
     def canDiscard(self, timestamp):
-        return self.ts_last_processed is None or timestamp - self.ts_last_processed >= 0.1
+        return timestamp - self.ts_last_processed < 0.1
 
     def isPiano(self, midi):
         return midi.getChannel() == MidiListener.CHANNEL_LEAP_MOTION and midi.getNoteNumber() < 40
