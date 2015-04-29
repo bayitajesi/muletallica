@@ -89,6 +89,9 @@ class Midi(object):
 	def isNoteOn(self):
 		return True
 
+	def __str__(self):
+		return "Midi(channel: %s, note: %s, velocity: %s)" % (self.channel, self.note_number, self.velocity)
+
 if __name__ == "__main__" :
-	main()
+	test_listener()
 
