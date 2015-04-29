@@ -1,4 +1,12 @@
+#activate_this = '/Users/Jesica/DevFiles/hackathon2015/muletallica/bin/activate_this.py'
+#execfile(activate_this, dict(__file__=activate_this))
+
+import sys
+sys.path.append('/Users/Jesica/DevFiles/hackathon2015')
+print sys.path
+
 import lights, time
+import json
 
 class Effects :
 
@@ -53,3 +61,10 @@ class Effects :
 			b = 255 - int((note-105)*255/21.0)
 		print str(r) + ', ' + str(g) + ', ' + str(b)
 		return r, g, b
+
+
+bodyObject = json.loads(body)
+note = bodyObject['note']
+emulator = lights.MilightController("192.168.43.3", "8899")
+effectsController = effects.Effects(emulator)
+effectsController.changeColorGamma(note, group)
