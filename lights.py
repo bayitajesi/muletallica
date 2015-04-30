@@ -14,6 +14,8 @@ class LightsController(object) :
 	def setBrightness(self, brightness, group) : 
 		correctedBrightness = int(brightness * 100 / 127.0)
 		self.setBrightnessInternal(correctedBrightness, group)
+		print "setBrightness", group
+
 
 	def setBrightnessInternal(self, correctedBrightness, group) : pass
 
@@ -26,11 +28,13 @@ class MilightController(LightsController) :
 		self._controller = milight.MiLight({'host': self._host, 'port': int(self._port)})
 		self._light = milight.LightBulb(['rgbw'])
 
-	def setColor(self, rgb, group) : 
+	def setColor(self, rgb, group) :
 		self._controller.send(self._light.color(milight.color_from_rgb(*rgb), group))
 
 	def setLight(self, rgb, brightness, group) : 
 		self._controller.send(self._light.color(milight.color_from_rgb(*rgb), group))
+		self.setBrightness(brightness, group)
+		print "setLight", group
 
 	def setLightOn(self, on, group) :
 		if on :

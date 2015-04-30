@@ -1,4 +1,5 @@
 import lights, time
+import random
 
 class Effects :
 
@@ -24,7 +25,20 @@ class Effects :
 		self._lights.setLightOn(True, group)
 		self._lights.setLightOn(False, group)
 
-    #def wiii(self, note, velocity, group) : pass
+	def wiii(self, note, velocity, group):
+		self._lights.setLightOn(True, group)
+		if note >= 40 and note <= 50:
+			r, g, b = self._transformNoteInColor(note)
+			self._lights.setLight([r, g, b], velocity, group)
+		elif note == 69:
+			random_note = random.randint(0, 127)
+			r, g, b = self._transformNoteInColor(random_note)
+			self._lights.setLight([r, g, b], velocity, group)
+
+	def wub(self, note, valocity, group):
+		if note >= 80 and note <= 127:
+			r, g, b = self._transformNoteInColor(note)
+			self._lights.setLight([r, g, b], velocity, group)
 
 	def _transformNoteInColor(self, note) :
 		if note < 21 :
@@ -51,5 +65,4 @@ class Effects :
 			r = 255 - (note - 105)
 			g = 0
 			b = 255 - int((note-105)*255/21.0)
-		print str(r) + ', ' + str(g) + ', ' + str(b)
 		return r, g, b

@@ -14,8 +14,8 @@ class MidiListener:
 
     def __init__(self):
         self.channelQueues = {
-            self.CHANNEL_BAJO: Queue(),
-            self.CHANNEL_DRUMS: Queue(),
+            # self.CHANNEL_BAJO: Queue(),
+            # self.CHANNEL_DRUMS: Queue(),
             self.CHANNEL_LEAP_MOTION: Queue()
         }
         self.channelProcessors = {}
@@ -28,7 +28,7 @@ class MidiListener:
             t.start()
 
     def receiveMidi(self, midi):
-        if midi.isNoteOn():
+        if midi.isNoteOn() and midi.getChannel() == self.CHANNEL_LEAP_MOTION:
             channel = midi.getChannel()
             queue = self.channelQueues[channel]
             queue.put((time.time(), midi))
@@ -51,6 +51,7 @@ class MidiProcessor(threading.Thread):
                 self.process_midi()
             except:
                 print "Error in thread"
+                raise
                 break
 
     def process_midi(self):
@@ -58,23 +59,27 @@ class MidiProcessor(threading.Thread):
         note = midi.getNoteNumber()
         velocity = midi.getVelocity()
         discarded = False
+        # print midi
         if self.isDrums(midi) and self.currentDrumsNote != note:
-            print "#DRUMS (GAMMA):", midi
+            # print "#DRUMS (GAMMA):", midi
             self.currentDrumsNote = note
             self.effectsController.changeIntensity(velocity, MidiListener.GROUP_BATERIA)
             self.effectsController.changeColorGamma(note, MidiListener.GROUP_BATERIA)
         elif self.canDiscard(timestamp):
             discarded = True
-            print "discarded 0"
+            print "discarded", midi
         elif self.isDrums(midi):
             print "#DRUMS:", midi
             self.effectsController.changeIntensity(velocity, MidiListener.GROUP_BATERIA)
         elif self.isPiano(midi):
             print "#PIANO1:", midi
             self.effectsController.colorFlicker(note, MidiListener.GROUP_LEAP_MOTION)
+        elif self.isDjWii(midi):
+            print "#DjWii", midi
+            self.effectsController.wiii(note, velocity, MidiListener.GROUP_LEAP_MOTION)
         else:
             discarded = True
-            print "discarded 2", midi
+            # print "discarded 2", midi
 
         if not discarded:
             self.ts_last_processed = time.time()
@@ -82,7 +87,7 @@ class MidiProcessor(threading.Thread):
         self.queue.task_done()
 
     def canDiscard(self, timestamp):
-        return timestamp - self.ts_last_processed < 0.1
+        return timestamp - self.ts_last_processed < 0.025
 
     def isPiano(self, midi):
         return midi.getChannel() == MidiListener.CHANNEL_LEAP_MOTION and midi.getNoteNumber() < 40
