@@ -11,7 +11,7 @@ def print_message(midi):
         print 'CONTROLLER', midi.getControllerNumber(), midi.getControllerValue()
 
 
-midiListener = midilistener.MidiListener()
+midiListener = midilistener.MidiListener(sys.argv[1])
 midiListener.start()
 midiin = rtmidi.RtMidiIn()
 ports = range(midiin.getPortCount())

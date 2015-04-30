@@ -14,8 +14,6 @@ class LightsController(object) :
 	def setBrightness(self, brightness, group) : 
 		correctedBrightness = int(brightness * 100 / 127.0)
 		self.setBrightnessInternal(correctedBrightness, group)
-		print "setBrightness", group
-
 
 	def setBrightnessInternal(self, correctedBrightness, group) : pass
 
@@ -34,7 +32,6 @@ class MilightController(LightsController) :
 	def setLight(self, rgb, brightness, group) : 
 		self._controller.send(self._light.color(milight.color_from_rgb(*rgb), group))
 		self.setBrightness(brightness, group)
-		print "setLight", group
 
 	def setLightOn(self, on, group) :
 		if on :
@@ -57,8 +54,10 @@ class EmulatorController(LightsController) :
 
 	def __init__(self, host, port) :
 		super(EmulatorController, self).__init__(host, port)
-		'''payload = { "name":"1", "lights": ["1", "2"] }
-		requests.put("http://" + self._host + ":" + self._port + "/api/newdeveloper/groups/1", json = payload)'''
+		payload = { "name":"1", "lights": ["1", "2"] }
+		requests.put("http://" + self._host + ":" + self._port + "/api/newdeveloper/groups/1", json = payload)
+		payload = { "name":"2", "lights": ["3", "4"] }
+		requests.put("http://" + self._host + ":" + self._port + "/api/newdeveloper/groups/2", json = payload)
 
 	def setLight(self, rgb, brightness, group) : 
 		correctedBrightness = int(brightness * 100 / 127.0)
@@ -74,7 +73,7 @@ class EmulatorController(LightsController) :
 
 	def setColor(self, rgb, group) :
 		x, y = self.from_rgb_to_xy(*rgb)
-		payload = { "xy":[x, y] }
+		payload = { "xy":[x, y], "on": True }
 		self._setLight(payload, group)
 
 	def setLightOn(self, on, group) :

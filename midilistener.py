@@ -1,4 +1,4 @@
-import lights
+import lights, lightsclient
 import effects
 import time
 import threading
@@ -11,18 +11,20 @@ class MidiListener:
 
     GROUP_BATERIA = 1
     GROUP_LEAP_MOTION = 2
+    USE_MULE = 1
 
-    def __init__(self):
+    def __init__(self, mode):
         self.channelQueues = {
             # self.CHANNEL_BAJO: Queue(),
             # self.CHANNEL_DRUMS: Queue(),
             self.CHANNEL_LEAP_MOTION: Queue()
         }
+        self._mode = mode
         self.channelProcessors = {}
 
     def start(self):
         for channel, queue in self.channelQueues.iteritems():
-            t = MidiProcessor(queue)
+            t = MidiProcessor(queue, self._mode)
             self.channelProcessors[channel] = t
             t.daemon = True
             t.start()
@@ -35,14 +37,15 @@ class MidiListener:
 
 class MidiProcessor(threading.Thread):
 
-    def __init__(self, queue):
+    def __init__(self, queue, mode):
         super(MidiProcessor, self).__init__()
         self.currentDrumsNote = 0
-        self.lightsController = lights.LightsController("192.168.43.3", "8899")
         self.queue = queue
-        emulator = lights.MilightController("192.168.43.3", "8899")
-        emulator.setLightOn(True,1)
-        self.effectsController = effects.Effects(emulator)
+        if mode == MidiListener.USE_MULE :
+            #self._lightsClient = lightsclient.LightsLocalClient("127.0.0.1", "8000", lightsclient.LightsLocalClient.EMULATOR)
+            self._lightsClient = lightsclient.LightsLocalClient("192.168.43.3", "8899", lightsclient.LightsLocalClient.REAL_SETUP)
+        else :
+            self._lightsClient = lightsclient.LightsRestClient("192.168.43.3", "8899", lightsclient.LightsLocalClient.REAL_SETUP)
         self.ts_last_processed = time.time()
 
     def run(self):
@@ -63,20 +66,23 @@ class MidiProcessor(threading.Thread):
         if self.isDrums(midi) and self.currentDrumsNote != note:
             # print "#DRUMS (GAMMA):", midi
             self.currentDrumsNote = note
-            self.effectsController.changeIntensity(velocity, MidiListener.GROUP_BATERIA)
-            self.effectsController.changeColorGamma(note, MidiListener.GROUP_BATERIA)
+            self._lightsClient.changeIntensity(velocity, MidiListener.GROUP_BATERIA)
+            self._lightsClient.changeColorGamma(note, MidiListener.GROUP_BATERIA)
         elif self.canDiscard(timestamp):
             discarded = True
             print "discarded", midi
         elif self.isDrums(midi):
             print "#DRUMS:", midi
-            self.effectsController.changeIntensity(velocity, MidiListener.GROUP_BATERIA)
+            self._lightsClient.changeIntensity(velocity, MidiListener.GROUP_BATERIA)
         elif self.isPiano(midi):
             print "#PIANO1:", midi
-            self.effectsController.colorFlicker(note, MidiListener.GROUP_LEAP_MOTION)
+            self._lightsClient.colorFlicker(note, MidiListener.GROUP_LEAP_MOTION)
         elif self.isDjWii(midi):
             print "#DjWii", midi
-            self.effectsController.wiii(note, velocity, MidiListener.GROUP_LEAP_MOTION)
+            self._lightsClient.wiii(note, velocity, MidiListener.GROUP_LEAP_MOTION)
+        elif self.isDjWub(midi):
+            print "#DjWub", midi
+            self._lightsClient.wub(note, velocity, MidiListener.GROUP_LEAP_MOTION)
         else:
             discarded = True
             # print "discarded 2", midi
