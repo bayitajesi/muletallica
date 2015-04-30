@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/apikit" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:json="http://www.mulesoft.org/schema/mule/json" xmlns:scripting="http://www.mulesoft.org/schema/mule/scripting" xmlns:spring="http://www.springframework.org/schema/beans" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/apikit http://www.mulesoft.org/schema/mule/apikit/current/mule-apikit.xsd http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/current/mule-scripting.xsd" version="EE-3.6.1">
+    <apikit:config name="api2-config" raml="api 2.raml" consoleEnabled="true" consolePath="console" doc:name="Router" />
+    <apikit:mapping-exception-strategy name="strategy">
+        <apikit:mapping statusCode="404">
+            <apikit:exception value="org.mule.module.apikit.exception.NotFoundException" />
+            <set-property propertyName="Content-Type" value="application/json" doc:name="Property" />
+            <set-payload value="{ &quot;message&quot;: &quot;Resource not found&quot; }" doc:name="Set Payload" />
+        </apikit:mapping>
+        <apikit:mapping statusCode="405">
+            <apikit:exception value="org.mule.module.apikit.exception.MethodNotAllowedException" />
+            <set-property propertyName="Content-Type" value="application/json" doc:name="Property" />
+            <set-payload value="{ &quot;message&quot;: &quot;Method not allowed&quot; }" doc:name="Set Payload" />
+        </apikit:mapping>
+        <apikit:mapping statusCode="415">
+            <apikit:exception value="org.mule.module.apikit.exception.UnsupportedMediaTypeException" />
+            <set-property propertyName="Content-Type" value="application/json" doc:name="Property" />
+            <set-payload value="{ &quot;message&quot;: &quot;Unsupported media type&quot; }" doc:name="Set Payload" />
+        </apikit:mapping>
+        <apikit:mapping statusCode="406">
+            <apikit:exception value="org.mule.module.apikit.exception.NotAcceptableException" />
+            <set-property propertyName="Content-Type" value="application/json" doc:name="Property" />
+            <set-payload value="{ &quot;message&quot;: &quot;Not acceptable&quot; }" doc:name="Set Payload" />
+        </apikit:mapping>
+        <apikit:mapping statusCode="400">
+            <apikit:exception value="org.mule.module.apikit.exception.BadRequestException" />
+            <set-property propertyName="Content-Type" value="application/json" doc:name="Property" />
+            <set-payload value="{ &quot;message&quot;: &quot;Bad request&quot; }" doc:name="Set Payload" />
+        </apikit:mapping>
+    </apikit:mapping-exception-strategy>
+    <flow name="api-main">
+        <http:inbound-endpoint address="http://localhost:8081/api" doc:name="HTTP" />
+        <apikit:router config-ref="api2-config" doc:name="APIkit Router" />
+        <exception-strategy ref="strategy" doc:name="Reference Exception Strategy" />
+    </flow>
+    <sub-flow name="pythonApi">
+        <scripting:component doc:name="Python">
+            <scripting:script engine="jython" file="/Users/federicoamdan/Projects/hackathon/muletallica/mule.py">
+                <property key="group" value="#[group]" />
+                <property key="command" value="#[command]" />
+            </scripting:script>
+        </scripting:component>
+    </sub-flow>
+    <flow name="put:/effects/{group}/gamma:api2-config">
+        <object-to-byte-array-transformer doc:name="Object to Byte Array" />
+        <object-to-string-transformer doc:name="Object to String" />
+        <set-variable variableName="command" value="0" doc:name="Variable" />
+        <!-- <http:body-to-parameter-map-transformer doc:name="Body to Parameter Map"/> -->
+        <flow-ref name="pythonApi" doc:name="Call Python Api" />
+        <set-payload value="&quot;Called Gamma&quot;" doc:name="Set Payload" />
+    </flow>
+    <flow name="put:/effects/{group}/flicker:api2-config">
+        <object-to-byte-array-transformer doc:name="Object to Byte Array" />
+        <object-to-string-transformer doc:name="Object to String" />
+        <set-variable variableName="command" value="1" doc:name="Variable" />
+        <!-- <http:body-to-parameter-map-transformer doc:name="Body to Parameter Map"/> -->
+        <flow-ref name="pythonApi" doc:name="Call Python Api" />
+        <set-payload value="&quot;Called Gamma&quot;" doc:name="Set Payload" />
+    </flow>
+    <flow name="put:/effects/{group}/intensity:api2-config">
+        <object-to-byte-array-transformer doc:name="Object to Byte Array" />
+        <object-to-string-transformer doc:name="Object to String" />
+        <set-variable variableName="command" value="2" doc:name="Variable" />
+        <!-- <http:body-to-parameter-map-transformer doc:name="Body to Parameter Map"/> -->
+        <flow-ref name="pythonApi" doc:name="Call Python Api" />
+        <set-payload value="&quot;Called Gamma&quot;" doc:name="Set Payload" />
+    </flow>
+    <flow name="put:/effects/{group}/wiii:api2-config">
+        <object-to-byte-array-transformer doc:name="Object to Byte Array" />
+        <object-to-string-transformer doc:name="Object to String" />
+        <set-variable variableName="command" value="3" doc:name="Variable" />
+        <!-- <http:body-to-parameter-map-transformer doc:name="Body to Parameter Map"/> -->
+        <flow-ref name="pythonApi" doc:name="Call Python Api" />
+        <set-payload value="&quot;Called Gamma&quot;" doc:name="Set Payload" />
+    </flow>
+    <flow name="put:/effects/{group}/wub:api2-config">
+        <object-to-byte-array-transformer doc:name="Object to Byte Array" />
+        <object-to-string-transformer doc:name="Object to String" />
+        <set-variable variableName="command" value="4" doc:name="Variable" />
+        <!-- <http:body-to-parameter-map-transformer doc:name="Body to Parameter Map"/> -->
+        <flow-ref name="pythonApi" doc:name="Call Python Api" />
+        <set-payload value="&quot;Called Gamma&quot;" doc:name="Set Payload" />
+    </flow>
+</mule>

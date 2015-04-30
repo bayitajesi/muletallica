@@ -1,0 +1,61 @@
+#%RAML 0.8
+title: muletallica
+version: 1.0.0
+baseUri: http://server/lights/{group}
+/effects:
+  displayName: effects
+  /{group}:
+    displayName: group
+    /gamma:
+      displayName: gamma
+      put:
+        description: change color gamma in a group of lights
+        body: 
+          application/json:
+            example: |
+             {
+               "note": 1
+             }
+    /intensity:
+      displayName: intensity
+      put:
+        description: change brightness in a group of lights
+        body: 
+          application/json:
+            example: |
+             {
+               "velocity": 1
+             }
+    /flicker:
+      displayName: flicker
+      put:
+        description: make a group of lights flicker
+        body: 
+          application/json:
+            example: |
+             {
+               "note": 1
+             }
+    /wiii:
+      displayName: wiii
+      put:
+        description: make wiii effect in a group of lights
+        body: 
+          application/json:
+            example: |
+             {
+               "note": 1,
+               "velocity": 1
+             }
+    /wub:
+      displayName: wub
+      put:
+        description: make wub effect in a group of lights
+        body: 
+          application/json:
+            example: |
+             {
+               "note": 1,
+               "velocity": 1
+             }
+             
