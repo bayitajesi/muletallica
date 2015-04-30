@@ -42,8 +42,7 @@ class MidiProcessor(threading.Thread):
         self.currentDrumsNote = 0
         self.queue = queue
         if mode == MidiListener.USE_MULE :
-            #self._lightsClient = lightsclient.LightsLocalClient("127.0.0.1", "8000", lightsclient.LightsLocalClient.EMULATOR)
-            self._lightsClient = lightsclient.LightsLocalClient("192.168.43.3", "8899", lightsclient.LightsLocalClient.REAL_SETUP)
+            self._lightsClient = lightsclient.LightsRestClient("127.0.0.1", "8081")
         else :
             self._lightsClient = lightsclient.LightsRestClient("192.168.43.3", "8899", lightsclient.LightsLocalClient.REAL_SETUP)
         self.ts_last_processed = time.time()
